@@ -2102,3 +2102,20 @@ Work Log:
 
 Stage Summary:
 - Duplicate-key React warning eliminated; log table now shows deduplicated tool badges with call counts (better readability too). No other modules touched.
+
+---
+Task ID: NAMELIST-AUDIT (Step 0 — awaiting boss OK)
+Agent: main (Z.ai Code)
+Task: Boss requested full update of "Name List" module into worker deployment lists (Interview/Trade Test/Medical/Mobilization/Demobilization) per 2 attached design images. STEP 0 = audit current module + migration plan, then STOP and wait for confirmation before coding.
+
+Work Log:
+- Analyzed both design images via VLM (/tmp/vlm-interview.json, /tmp/vlm-mobilization.json) — extracted full layout specs (header NAME LIST + subject, navy List-No capsule with gold outline, gold divider with ◆, cream info bar, navy rounded table header, gold-circle row numbers, trade chips + Total capsule, 2 signature cards with stamp circles, 35mm top / 22mm bottom letterhead space; Interview variant has Result tick-boxes; Mobilization variant has Blood Group red capsules).
+- Audited current module — CRITICAL FINDING: the existing "Name List" is a COMPANY DIRECTORY (NameListEntry: name, type client/supplier/subcontractor/other, contactPerson, phone, email, crNumber, vatNumber, address, city, status, notes), NOT worker lists. Files: views/name-list.tsx (943 lines, KPI cards + filters + table + CRUD dialog + CSV + A4 directory print), print/name-list-print.tsx (company directory A4), api/name-list/route.ts + [id]/route.ts (GET/POST/PUT/DELETE). ZERO connection to Staff/Client/Project/PO — standalone directory.
+- Current data: exactly 1 record (subcontractor "HYUNDAI", active). Staff=14 (all active, assigned to 3 projects via ProjectStaff; categories: Electrician/Plumber/Welder/General Labour/Foreman; Staff model has NO nationality/passportNo/bloodGroup/experienceYears fields — has phone, position, staffCategory, iqamaId, iqamaExpiry, passportExpiry). Clients=4 real (Al Rushaid, Gulf Steel, Jubail Technical, Al Noor). Projects=3.
+- Permissions: 'namelist' module (view/create/edit/delete) exists.
+- BACKUP MADE: db copied to backups/custom-pre-namelist-20261020-222918.db; git branch backup-pre-namelist-update + tag pre-namelist-update created (working tree was clean).
+- STOPPED as instructed — Phase 1 build waits for boss confirmation.
+
+Stage Summary:
+- Audit report delivered to boss in chat: current state (company directory, 1 record), zero entity links, and the migration plan (keep directory as "Directory" tab + new worker-list system as the main module; new tables NameList + NameListWorker; Staff gets nationality/passportNo/bloodGroup/experienceYears/deploymentStatus columns; NL-YYYY-#### numbering; migration of old record optional).
+- Awaiting boss OK before any code changes.
