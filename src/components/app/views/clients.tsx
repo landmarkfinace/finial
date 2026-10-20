@@ -64,6 +64,7 @@ import { buildCsv, csvFilename, downloadCsv } from '@/lib/csv'
 import { formatDate, formatMoney } from '@/lib/format'
 import { can, useAppStore } from '@/lib/store'
 import type { Client, ClientRow, ClientStatus, Paginated } from '@/lib/types'
+import { ClientNameLists } from './client-name-lists'
 
 type ClientForm = {
   name: string
@@ -1147,6 +1148,9 @@ export function ClientsView() {
               </div>
 
               <Separator />
+
+              {/* Name Lists — every list this company has, grouped by date */}
+              <ClientNameLists clientId={client.id} />
 
               {/* Deployed workers */}
               <div>

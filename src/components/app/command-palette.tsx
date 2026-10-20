@@ -76,7 +76,7 @@ const NAV: NavEntry[] = [
   { view: 'e-invoices', label: 'E-Invoice', icon: FileOutput, perm: 'einvoices.view', keywords: 'bill billing tax invoice zatca bilingual arabic qr payment due credit debit note' },
   { view: 'supplier-pos', label: 'Supplier P.O.', icon: Package, perm: 'supplierpo.view', keywords: 'purchase order supplier buy materials' },
   { view: 'agreements', label: 'Agreements', icon: FileSignature, perm: 'agreements.view', keywords: 'contract labor supply service subcontract clauses installments' },
-  { view: 'name-list', label: 'Name List', icon: BookUser, perm: 'namelist.view', keywords: 'companies directory contacts suppliers clients' },
+  { view: 'name-list', label: 'Name List', icon: BookUser, perm: 'namelist.view', keywords: 'worker lists interview mobilization trade test medical demobilization companies directory' },
   { view: 'roles', label: 'Roles & Permissions', icon: ShieldCheck, perm: 'roles.view', keywords: 'access control rbac' },
   { view: 'users', label: 'Users', icon: UserCog, perm: 'users.view', keywords: 'accounts login team' },
   { view: 'settings', label: 'Settings', icon: SettingsIcon, perm: 'settings.view', keywords: 'company profile logo currency' },
@@ -106,7 +106,7 @@ const ACTIONS: QuickAction[] = [
   { view: 'e-invoices', label: 'New E-Invoice', icon: FileOutput, perm: 'einvoices.create', keywords: 'new bill invoice tax zatca bilingual arabic customer charge', intent: 'create' },
   { view: 'supplier-pos', label: 'New Supplier P.O.', icon: Package, perm: 'supplierpo.create', keywords: 'new purchase order supplier buy', intent: 'create' },
   { view: 'agreements', label: 'New Agreement', icon: FileSignature, perm: 'agreements.create', keywords: 'new contract labor supply service', intent: 'create' },
-  { view: 'name-list', label: 'Add Name List Entry', icon: BookUser, perm: 'namelist.create', keywords: 'new company contact supplier directory', intent: 'create' },
+  { view: 'name-list', label: 'New Name List', icon: BookUser, perm: 'namelist.create', keywords: 'new worker list interview mobilization trade test medical demobilization deployment', intent: 'create' },
   { view: 'attendance', label: 'Mark Attendance', icon: CalendarClock, perm: 'attendance.create', keywords: 'check in timesheet hours present', intent: 'create' },
   { view: 'salary-sheet', label: 'Print Salary Sheet', icon: FileSpreadsheet, perm: 'payroll.print', keywords: 'export report landscape paper pdf', intent: 'print' },
 ]

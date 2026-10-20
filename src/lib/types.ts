@@ -322,6 +322,12 @@ export type StaffRow = {
   status: StaffStatus
   staffCategory: { id: string; name: string } | null
   projects: { id: string; name: string }[]
+  // ---- Name List additions ----
+  passportNo: string | null
+  nationality: string | null
+  bloodGroup: string | null
+  experienceYears: number | null
+  deploymentStatus: string
 }
 
 export type AttendanceRow = {
@@ -1042,7 +1048,9 @@ export type QuotationRow = {
   assets?: QuotationAssetRow[]
 }
 
-export type NameListRow = {
+/** Company/person directory entry (the "Directory" tab of the Name List
+ *  module) — maps the NameListEntry table. */
+export type NameListEntryRow = {
   id: string
   name: string
   type: string
@@ -1256,4 +1264,110 @@ export type GlossaryTermRow = {
   termAr: string
   notes: string | null
   createdAt: string
+}
+
+// ── Name List module (worker deployment lists) ─────────────────────────────
+export type NameListSubjectKind = 'interview' | 'mobilization'
+export type NameListWorkerResult = 'selected' | 'rejected' | 'absent' | 'onhold'
+export type NameListStatus = 'draft' | 'sent' | 'completed' | 'cancelled'
+
+export type NameListSubjectRow = {
+  id: string
+  name: string
+  color: string
+  kind: NameListSubjectKind
+  sortOrder: number
+  isSystem: boolean
+}
+
+/** Worker row inside a list, with the staff fields the printouts need. */
+export type NameListWorkerRow = {
+  id: string
+  staffId: string
+  sortOrder: number
+  result: NameListWorkerResult | null
+  remarks: string | null
+  staff: {
+    id: string
+    fullName: string
+    phone: string | null
+    position: string | null
+    iqamaId: string
+    iqamaExpiry: string | null
+    passportNo: string | null
+    nationality: string | null
+    bloodGroup: string | null
+    experienceYears: number | null
+    deploymentStatus: string
+    status: string
+    categoryName: string | null
+  }
+}
+
+/** Summary row (list index, today board, client tab). */
+export type NameListRow = {
+  id: string
+  listNo: string
+  date: string
+  time: string | null
+  clientId: string
+  clientName: string
+  location: string | null
+  projectId: string | null
+  projectName: string | null
+  subjectId: string
+  subjectName: string
+  subjectColor: string
+  subjectKind: NameListSubjectKind
+  positions: string[]
+  clientContact: string | null
+  clientPhone: string | null
+  transport: string | null
+  refInterviewListId: string | null
+  refInterviewListNo: string | null
+  refPoNo: string | null
+  notes: string | null
+  status: NameListStatus
+  workerCount: number
+  resultCounts: { selected: number; rejected: number; absent: number; onhold: number; pending: number }
+  signedCopyName: string | null
+  createdByName: string | null
+  createdAt: string
+}
+
+/** Full list for the editor / print (GET /api/name-lists/[id]). */
+export type NameListDetail = NameListRow & {
+  client: {
+    id: string
+    name: string
+    contactPerson: string | null
+    phone: string | null
+    city: string | null
+  } | null
+  workers: NameListWorkerRow[]
+  columns: NameListColumns | null
+}
+
+/** Visible-column toggles (# and Employee Name are always shown). */
+export type NameListColumnKey =
+  | 'trade'
+  | 'experience'
+  | 'nationality'
+  | 'iqama'
+  | 'passport'
+  | 'mobile'
+  | 'blood'
+  | 'iqamaExpiry'
+  | 'employeeId'
+  | 'result'
+  | 'remarks'
+
+export type NameListColumns = Partial<Record<NameListColumnKey, boolean>>
+
+/** Per-user warning returned when adding a worker (never a hard block). */
+export type NameListWorkerWarning = {
+  staffId: string
+  staffName: string
+  type: 'conflict' | 'deployed' | 'missing'
+  message: string
 }

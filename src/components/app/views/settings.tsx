@@ -24,6 +24,7 @@ import {
   GlossarySettingsSection,
 } from '@/components/app/settings/e-invoice-settings'
 import { AiSettingsSection } from '@/components/app/settings/ai-settings'
+import { NameListSettingsSection } from '@/components/app/settings/namelist-settings'
 import {
   ENV_LABELS,
   ZATCA_ENV_GATEWAYS,
@@ -971,6 +972,9 @@ export function SettingsView() {
 
         {/* ---- AI Assistant provider + usage + logs ---- */}
         <AiSettingsSection />
+
+        {/* ---- Name List subjects ---- */}
+        <NameListSettingsSection />
 
         {/* ---- EN→AR translation glossary ---- */}
         <GlossarySettingsSection />

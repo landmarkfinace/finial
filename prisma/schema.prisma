@@ -81,6 +81,7 @@ model Client {
   quotations  Quotation[]
   agreements  Agreement[]
   eInvoices   EInvoice[] @relation("EInvoiceClient")
+  nameLists   NameList[] @relation("NameListClient")
 
   @@index([status])
 }
@@ -103,6 +104,7 @@ model Project {
   attendances  Attendance[]
   payrolls     Payroll[]
   transactions Transaction[]
+  nameLists    NameList[] @relation("NameListProject")
 
   @@index([status])
   @@index([clientId])
@@ -135,6 +137,15 @@ model Staff {
   profilePhoto       String?
   residentialAddress String?
   status             String         @default("active") // active | inactive
+  // ---- Name List module additions (additive — safe columns) ----
+  passportNo         String? // passport number (Name List mobilization print)
+  nationality        String? // printed on name lists
+  bloodGroup         String? // printed in a red capsule on mobilization lists
+  experienceYears    Int? // "Exp. (yrs)" column on interview lists
+  // deployment lifecycle: available → in_interview → selected → deployed
+  // (back to available after demobilization). Existing on-leave/exit flows
+  // keep using `status` — this column only tracks the deployment pipeline.
+  deploymentStatus   String         @default("available")
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
   deletedAt          DateTime?
@@ -144,9 +155,11 @@ model Staff {
   payrolls    Payroll[]
   advances    WorkerAdvance[]
   expenses    Transaction[]    @relation("ExpenseSpender")
+  nameListWorkers NameListWorker[]
 
   @@index([staffCategoryId])
   @@index([status])
+  @@index([deploymentStatus])
 }
 
 model ProjectStaff {
@@ -154,6 +167,8 @@ model ProjectStaff {
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   staffId   String
   staff     Staff   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  // set by completed Mobilization lists (start date = list date)
+  assignedAt DateTime?
 
   @@id([projectId, staffId])
   @@index([staffId])
@@ -484,6 +499,93 @@ model NameListEntry {
 
   @@index([type])
   @@index([name])
+}
+
+// ── Name List module (worker deployment lists) ─────────────────────────────
+// Every day workers are sent to client companies for interviews or
+// mobilization. Each list is a separate record with its own NL-YYYY-0001
+// number, a subject (purpose) and its workers picked from the Staff table.
+
+// Subject catalog — the 5 system subjects ship with the module; admins can
+// add more in Settings (each gets a badge colour and a template kind).
+model NameListSubject {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  // badge colour (hex) — Interview #2F6FB0, Mobilization #2E7D5B,
+  // Trade Test #C98A1B, Medical #132A4A, Demobilization #6B7488
+  color     String   @default("#6B7488")
+  // template kind: 'interview' (result workflow, tick-box print) or
+  // 'mobilization' (site assignment workflow, passport/blood print)
+  kind      String   @default("interview")
+  sortOrder Int      @default(0)
+  isSystem  Boolean  @default(false) // system subjects cannot be deleted
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lists NameList[]
+}
+
+model NameList {
+  id         String   @id @default(cuid())
+  listNo     String   @unique // NL-YYYY-0001 — continues from the highest number
+  year       Int // year part of listNo for fast max-seq lookups
+  seq        Int // numeric part of listNo
+  date       DateTime // list date (day the workers are sent)
+  time       String? // e.g. "09:00"
+  clientId   String
+  client     Client   @relation("NameListClient", fields: [clientId], references: [id])
+  location   String? // interview place / office
+  projectId  String? // site for mobilization / demobilization lists
+  project    Project? @relation("NameListProject", fields: [projectId], references: [id], onDelete: SetNull)
+  subjectId  String
+  subject    NameListSubject @relation(fields: [subjectId], references: [id])
+  positions  String? // JSON array of requested trades, e.g. ["Electrician","Mason"]
+  clientContact String? // client contact person
+  clientPhone   String? // client contact phone
+  transport     String? // e.g. "Company bus · Vehicle 12 · Driver Salim"
+  // link to the interview list this mobilization was created from
+  refInterviewListId String?
+  refInterviewList   NameList?  @relation("InterviewToMob", fields: [refInterviewListId], references: [id], onDelete: SetNull)
+  mobFromInterviews  NameList[] @relation("InterviewToMob")
+  refPoNo        String? // optional client PO / reference number
+  notes          String?
+  status         String   @default("draft") // draft | sent | completed | cancelled
+  // JSON snapshot of the visible-columns setting for this list
+  columns        String?
+  // uploaded signed/stamped client copy (scan or photo)
+  signedCopyExt  String?
+  signedCopyName String?
+  createdById    String?
+  createdByName  String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  workers NameListWorker[]
+
+  @@index([clientId, date])
+  @@index([status])
+  @@index([subjectId])
+  @@index([year, seq])
+  @@index([date])
+}
+
+// A worker row inside a list — always references a real Staff record.
+model NameListWorker {
+  id         String   @id @default(cuid())
+  nameListId String
+  nameList   NameList @relation(fields: [nameListId], references: [id], onDelete: Cascade)
+  staffId    String
+  staff      Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  sortOrder  Int      @default(0) // manual drag order
+  // interview-kind results: selected | rejected | absent | onhold
+  result     String?
+  remarks    String? // e.g. offered rate, rejection reason
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([nameListId, staffId])
+  @@index([staffId])
+  @@index([result])
 }
 
 // Saved supplier directory — the boss asked for an "add supplier" option inside
