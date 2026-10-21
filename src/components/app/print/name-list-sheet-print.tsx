@@ -57,6 +57,7 @@ import {
   nlFormatDate,
   nlOrderedColumns,
   printFontTier,
+  printNameFontTier,
   rememberColumnDefaults,
 } from '@/lib/name-list-utils'
 
@@ -146,10 +147,10 @@ function estLines(text: string, charsPerLine: number): number {
 }
 
 function rowHeightMm(w: NameListWorkerRow, hasResultBoxes: boolean, remarksShown: boolean): number {
-  let h = 7.6 // base row (name + padding)
-  if (hasResultBoxes) h = 9.4 // tick-box triple needs more room
+  let h = 8.4 // base row (name + padding) — raised with the bigger print fonts
+  if (hasResultBoxes) h = 10.4 // tick-box triple needs more room
   if (remarksShown) h += Math.max(0, estLines(w.remarks ?? '', 16) - 1) * 2.2
-  h += Math.max(0, estLines(w.staff.fullName, 26) - 1) * 2.2
+  h += Math.max(0, estLines(w.staff.fullName, 24) - 1) * 2.2
   return h
 }
 
@@ -338,6 +339,7 @@ export function NameListSheetDocument({
   const isMob = list.subjectKind === 'mobilization'
   const cols = nlOrderedColumns(list.subjectKind, columns)
   const fontTier = printFontTier(cols.length + 2)
+  const nameFontTier = printNameFontTier(cols.length + 2)
 
   const hasResultCol = cols.some((c) => c.key === 'result')
   const hasRemarks = cols.some((c) => c.key === 'remarks')
@@ -399,7 +401,7 @@ export function NameListSheetDocument({
     trades.set(t, (trades.get(t) ?? 0) + 1)
   }
 
-  const th = 'px-1 py-[3px] text-center align-middle text-[7.5px] font-bold uppercase tracking-[0.04em] text-white'
+  const th = 'px-1 py-[3px] text-center align-middle text-[8.2px] font-bold uppercase tracking-[0.04em] text-white'
   const rowFont = fontTier
 
   const letterheadArt = letterhead.mode === 'full' && letterhead.fullPageImage
@@ -563,7 +565,7 @@ export function NameListSheetDocument({
                         Client
                       </p>
                       <p
-                        className="mt-[0.6mm] truncate text-[9.5px] font-bold leading-tight"
+                        className="mt-[0.6mm] truncate text-[10.5px] font-bold leading-tight"
                         style={{ color: NAVY }}
                         title={list.clientName}
                       >
@@ -677,6 +679,7 @@ export function NameListSheetDocument({
                       rowIdxs={plan.rows}
                       th={th}
                       rowFont={rowFont}
+                      nameFont={nameFontTier}
                       isMob={isMob}
                     />
                   </div>
@@ -698,6 +701,7 @@ export function NameListSheetDocument({
                     rowIdxs={plan.rows}
                     th={th}
                     rowFont={rowFont}
+                    nameFont={nameFontTier}
                     isMob={isMob}
                   />
                 </>
@@ -786,6 +790,7 @@ function SheetTable({
   rowIdxs,
   th,
   rowFont,
+  nameFont,
   isMob,
 }: {
   list: NameListDetail
@@ -793,6 +798,7 @@ function SheetTable({
   rowIdxs: number[]
   th: string
   rowFont: string
+  nameFont: string
   isMob: boolean
 }) {
   const widths = useMemo(() => {
@@ -809,6 +815,7 @@ function SheetTable({
   }, [cols])
 
   const td = `${rowFont} px-1 py-[2.6px] align-middle leading-[1.25] text-neutral-900`
+  const nameTd = `${nameFont} px-1 py-[2.6px] align-middle leading-[1.25] font-semibold text-neutral-900`
 
   return (
     <table className="w-full table-fixed border-collapse" style={{ tableLayout: 'fixed' }}>
@@ -843,13 +850,13 @@ function SheetTable({
             <tr key={w.id} style={{ borderBottom: `1px solid ${ROW_SEP}` }}>
               <td className={`${td} text-center`}>
                 <span
-                  className="inline-flex h-[4.2mm] w-[4.2mm] items-center justify-center rounded-full text-[7px] font-bold"
+                  className="inline-flex h-[4.6mm] w-[4.6mm] items-center justify-center rounded-full text-[7.6px] font-bold"
                   style={{ border: `1.3px solid ${GOLD}`, color: NAVY }}
                 >
                   {idx + 1}
                 </span>
               </td>
-              <td className={`${td} font-semibold`}>{w.staff.fullName}</td>
+              <td className={nameTd}>{w.staff.fullName}</td>
               {cols.map((c) => (
                 <td key={c.key} className={td} style={c.key === 'remarks' ? {} : { textAlign: 'center' }}>
                   <CellContent colKey={c.key} w={w} isMob={isMob} />
@@ -888,7 +895,7 @@ function CellContent({
     case 'blood':
       return w.staff.bloodGroup ? (
         <span
-          className="inline-block rounded-full px-1.5 py-[0.5px] text-[7px] font-bold"
+          className="inline-block rounded-full px-1.5 py-[0.5px] text-[7.6px] font-bold"
           style={{ background: BLOOD_BG, color: BLOOD_FG }}
         >
           {w.staff.bloodGroup}
@@ -911,14 +918,14 @@ function CellContent({
                 ? '#B45309'
                 : '#6D28D9'
         return (
-          <span className="text-[7.5px] font-bold uppercase" style={{ color }}>
+          <span className="text-[8.2px] font-bold uppercase" style={{ color }}>
             {w.result === 'onhold' ? 'On hold' : w.result}
           </span>
         )
       }
       // 3 empty tick boxes — the client ticks by hand
       return (
-        <span className="inline-flex items-center gap-[3px] whitespace-nowrap text-[6px] text-neutral-700">
+        <span className="inline-flex items-center gap-[3px] whitespace-nowrap text-[6.6px] text-neutral-700">
           <TickBox label="Selected" />
           <TickBox label="Rejected" />
           <TickBox label="Absent" />
@@ -935,7 +942,7 @@ function TickBox({ label }: { label: string }) {
   return (
     <span className="inline-flex items-center gap-[1.5px]">
       <span
-        className="inline-block h-[2.4mm] w-[2.4mm] rounded-[1px]"
+        className="inline-block h-[2.6mm] w-[2.6mm] rounded-[1px]"
         style={{ border: '1px solid #9CA3AF', background: '#fff' }}
       />
       {label}

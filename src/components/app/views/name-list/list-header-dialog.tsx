@@ -382,8 +382,10 @@ export function ListHeaderDialog({
         <WorkerPickerDialog
           open={pickerOpen}
           onOpenChange={setPickerOpen}
-          existingStaffIds={new Set(workers)}
+          existingStaffIds={new Set()}
+          initialSelectedIds={workers}
           onAdd={(ids) => setWorkers(ids)}
+          onWorkerCreated={(staff) => setWorkers((prev) => Array.from(new Set([...prev, staff.id])))}
         />
       ) : null}
     </>

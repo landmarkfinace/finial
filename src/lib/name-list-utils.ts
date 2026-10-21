@@ -198,9 +198,17 @@ export function effectiveColumnsServer(
   return snapshot ?? defaultColumnsFor(kind)
 }
 
-/** Rough font tier: more visible columns → slightly smaller print font. */
+/** Rough font tier: more visible columns → slightly smaller print font.
+ *  (Boss asked for bigger print text — tiers were raised ~0.6–0.8px.) */
 export function printFontTier(visibleCount: number): string {
-  if (visibleCount >= 9) return 'text-[6.8px]'
-  if (visibleCount >= 7) return 'text-[7.6px]'
-  return 'text-[8.6px]'
+  if (visibleCount >= 9) return 'text-[7.4px]'
+  if (visibleCount >= 7) return 'text-[8.2px]'
+  return 'text-[9.2px]'
+}
+
+/** Employee Name column prints one step larger — names must read easily. */
+export function printNameFontTier(visibleCount: number): string {
+  if (visibleCount >= 9) return 'text-[8px]'
+  if (visibleCount >= 7) return 'text-[8.8px]'
+  return 'text-[10px]'
 }

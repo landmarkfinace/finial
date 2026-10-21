@@ -30,6 +30,7 @@ import {
   Trash2,
   TriangleAlert,
   UserPlus,
+  UserRoundPlus,
   Users,
   X,
 } from 'lucide-react'
@@ -73,6 +74,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { SectionCard } from '../../shared/page-header'
 import { WorkerPickerDialog } from './worker-picker'
+import { QuickAddWorkerDialog } from './quick-add-worker'
 import { ShareDialog } from './share-dialog'
 import { ListHeaderDialog } from './list-header-dialog'
 
@@ -104,6 +106,7 @@ export function ListEditor({
   const [detail, setDetail] = useState<DetailResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [quickAddOpen, setQuickAddOpen] = useState(false)
   const [headerOpen, setHeaderOpen] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -393,7 +396,7 @@ export function ListEditor({
                 </Badge>
               ) : null}
             </div>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-[15px] text-muted-foreground">
               {detail.clientName} · {nlDateInput(detail.date)}
               {detail.time ? ` · ${detail.time}` : ''}
               {detail.projectName ? ` · ${detail.projectName}` : detail.location ? ` · ${detail.location}` : ''}
@@ -426,7 +429,7 @@ export function ListEditor({
         </div>
 
         {/* meta grid */}
-        <div className="mt-3 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-3 grid gap-x-6 gap-y-2 text-[15px] sm:grid-cols-2 lg:grid-cols-3">
           <MetaItem label="Client company" value={detail.clientName} />
           <MetaItem
             label={detail.subjectKind === 'mobilization' ? 'Project / Site' : 'Location'}
@@ -566,7 +569,7 @@ export function ListEditor({
       {/* ── workers card ── */}
       <SectionCard>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="flex items-center gap-2 text-sm font-semibold">
+          <h3 className="flex items-center gap-2 text-base font-semibold">
             <Users className="h-4 w-4" />
             {detail.workers.length} {detail.workers.length === 1 ? 'worker' : 'workers'} in this list
           </h3>
@@ -582,9 +585,14 @@ export function ListEditor({
               </>
             ) : null}
             {canEdit && !readOnly ? (
-              <Button size="sm" onClick={() => setPickerOpen(true)}>
-                <UserPlus className="h-4 w-4" /> Add workers
-              </Button>
+              <>
+                <Button variant="outline" size="sm" onClick={() => setQuickAddOpen(true)} title="Type a new worker directly — creates the employee record and adds it to this list">
+                  <UserRoundPlus className="h-4 w-4" /> New worker
+                </Button>
+                <Button size="sm" onClick={() => setPickerOpen(true)}>
+                  <UserPlus className="h-4 w-4" /> Add workers
+                </Button>
+              </>
             ) : null}
           </div>
         </div>
@@ -612,9 +620,9 @@ export function ListEditor({
 
         {/* workers table (desktop) */}
         <div className="mt-3 hidden overflow-x-auto lg:block">
-          <table className="w-full text-sm">
+          <table className="w-full text-[15px]">
             <thead>
-              <tr className="border-b text-left text-xs uppercase tracking-wide text-muted-foreground">
+              <tr className="border-b text-left text-[11px] uppercase tracking-wide text-muted-foreground">
                 <th className="w-16 py-2 pl-1 font-semibold">#</th>
                 <th className="py-2 font-semibold">Employee</th>
                 <th className="py-2 font-semibold">Iqama</th>
@@ -646,7 +654,7 @@ export function ListEditor({
                   >
                     <td className="py-2 pl-1">
                       <div className="flex items-center gap-1">
-                        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-gold/60 text-[11px] font-bold text-primary dark:border-gold/50">
+                        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-gold/60 text-xs font-bold text-primary dark:border-gold/50">
                           {i + 1}
                         </span>
                         {canEdit && !readOnly ? (
@@ -673,7 +681,7 @@ export function ListEditor({
                     </td>
                     <td className="py-2">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-medium">{w.staff.fullName}</span>
+                        <span className="font-semibold">{w.staff.fullName}</span>
                         {missing.length > 0 ? (
                           <button
                             className="text-amber-600 hover:text-amber-700 dark:text-amber-400"
@@ -685,19 +693,19 @@ export function ListEditor({
                           </button>
                         ) : null}
                       </div>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-[13px] text-muted-foreground">
                         {w.staff.categoryName ?? w.staff.position ?? '—'}
                         {w.staff.nationality ? ` · ${w.staff.nationality}` : ''}
                         {w.staff.bloodGroup ? ` · ${w.staff.bloodGroup}` : ''}
                       </p>
                       {rowWarnings.map((rw, k) => (
-                        <p key={k} className="text-[11px] text-amber-600 dark:text-amber-400">
+                        <p key={k} className="text-xs text-amber-600 dark:text-amber-400">
                           ⚠ {rw.message}
                         </p>
                       ))}
                     </td>
-                    <td className="py-2 font-mono text-xs">{w.staff.iqamaId}</td>
-                    <td className="py-2 font-mono text-xs">{formatSaudiMobile(w.staff.phone)}</td>
+                    <td className="py-2 font-mono text-[13px]">{w.staff.iqamaId}</td>
+                    <td className="py-2 font-mono text-[13px]">{formatSaudiMobile(w.staff.phone)}</td>
                     {isInterview ? (
                       <td className="py-2">
                         {canEdit && !readOnly ? (
@@ -705,7 +713,7 @@ export function ListEditor({
                             value={w.result ?? 'pending'}
                             onValueChange={(v) => saveResult(w.id, v === 'pending' ? null : (v as NameListWorkerResult))}
                           >
-                            <SelectTrigger size="sm" className="h-8 w-full">
+                            <SelectTrigger size="sm" className="h-9 w-full text-[13px]">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -723,13 +731,13 @@ export function ListEditor({
                         )}
                       </td>
                     ) : (
-                      <td className="py-2 font-mono text-xs">{w.staff.passportNo ?? '—'}</td>
+                      <td className="py-2 font-mono text-[13px]">{w.staff.passportNo ?? '—'}</td>
                     )}
                     <td className="py-2">
                       {canEdit && !readOnly ? (
                         <Input
                           defaultValue={w.remarks ?? ''}
-                          className="h-8 text-xs"
+                          className="h-9 text-[13px]"
                           placeholder="Offered rate, reason…"
                           onBlur={(e) => {
                             if ((w.remarks ?? '') !== e.target.value) {
@@ -738,7 +746,7 @@ export function ListEditor({
                           }}
                         />
                       ) : (
-                        <span className="text-xs">{w.remarks ?? '—'}</span>
+                        <span className="text-[13px]">{w.remarks ?? '—'}</span>
                       )}
                     </td>
                     <td className="py-2 text-right">
@@ -773,8 +781,8 @@ export function ListEditor({
               <li key={w.id} className="rounded-lg border p-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="flex items-center gap-1.5 font-medium">
-                      <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-gold/60 text-[10px] font-bold text-primary dark:border-gold/50">
+                    <p className="flex items-center gap-1.5 text-[15px] font-semibold">
+                      <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-gold/60 text-[11px] font-bold text-primary dark:border-gold/50">
                         {i + 1}
                       </span>
                       {w.staff.fullName}
@@ -789,13 +797,13 @@ export function ListEditor({
                         </button>
                       ) : null}
                     </p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
+                    <p className="mt-0.5 text-[13px] text-muted-foreground">
                       {w.staff.categoryName ?? '—'}
                       {w.staff.nationality ? ` · ${w.staff.nationality}` : ''} · Iqama {w.staff.iqamaId}
                     </p>
-                    <p className="text-xs text-muted-foreground">{formatSaudiMobile(w.staff.phone)}</p>
+                    <p className="text-[13px] text-muted-foreground">{formatSaudiMobile(w.staff.phone)}</p>
                     {rowWarnings.map((rw, k) => (
-                      <p key={k} className="text-[11px] text-amber-600 dark:text-amber-400">
+                      <p key={k} className="text-xs text-amber-600 dark:text-amber-400">
                         ⚠ {rw.message}
                       </p>
                     ))}
@@ -806,7 +814,7 @@ export function ListEditor({
                         value={w.result ?? 'pending'}
                         onValueChange={(v) => saveResult(w.id, v === 'pending' ? null : (v as NameListWorkerResult))}
                       >
-                        <SelectTrigger size="sm" className="h-8 w-32">
+                        <SelectTrigger size="sm" className="h-9 w-32 text-[13px]">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -851,7 +859,7 @@ export function ListEditor({
                 {isInterview && canEdit && !readOnly ? (
                   <Input
                     defaultValue={w.remarks ?? ''}
-                    className="mt-2 h-8 text-xs"
+                    className="mt-2 h-9 text-[13px]"
                     placeholder="Remarks (offered rate, reason…)"
                     onBlur={(e) => {
                       if ((w.remarks ?? '') !== e.target.value) {
@@ -860,7 +868,7 @@ export function ListEditor({
                     }}
                   />
                 ) : w.remarks ? (
-                  <p className="mt-1 text-xs text-muted-foreground">{w.remarks}</p>
+                  <p className="mt-1 text-[13px] text-muted-foreground">{w.remarks}</p>
                 ) : null}
               </li>
             )
@@ -868,12 +876,18 @@ export function ListEditor({
         </ul>
 
         {detail.workers.length === 0 ? (
-          <div className="mt-4 rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+          <div className="mt-4 rounded-lg border border-dashed p-6 text-center text-[15px] text-muted-foreground">
             No workers yet.{' '}
             {canEdit && !readOnly ? (
-              <button className="font-medium text-primary underline-offset-2 hover:underline" onClick={() => setPickerOpen(true)}>
-                Add workers from the Employee database
-              </button>
+              <>
+                <button className="font-medium text-primary underline-offset-2 hover:underline" onClick={() => setPickerOpen(true)}>
+                  Add from the Employee database
+                </button>
+                {' or '}
+                <button className="font-medium text-primary underline-offset-2 hover:underline" onClick={() => setQuickAddOpen(true)}>
+                  type a new worker directly
+                </button>
+              </>
             ) : null}
           </div>
         ) : null}
@@ -886,6 +900,23 @@ export function ListEditor({
           onOpenChange={setPickerOpen}
           existingStaffIds={new Set(detail.workers.map((w) => w.staffId))}
           onAdd={addWorkers}
+          listId={detail.id}
+          onWorkerCreated={async () => {
+            await load()
+            onListMutated?.()
+          }}
+        />
+      ) : null}
+
+      {quickAddOpen ? (
+        <QuickAddWorkerDialog
+          open={quickAddOpen}
+          onOpenChange={setQuickAddOpen}
+          listId={detail.id}
+          onSaved={async () => {
+            await load()
+            onListMutated?.()
+          }}
         />
       ) : null}
 
@@ -1009,7 +1040,7 @@ function MetaItem({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className="mt-0.5 text-sm">{value}</p>
+      <p className="mt-0.5 text-[15px]">{value}</p>
     </div>
   )
 }

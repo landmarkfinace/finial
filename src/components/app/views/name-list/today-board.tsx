@@ -106,10 +106,10 @@ export function TodayBoard({
       <SectionCard>
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h3 className="flex items-center gap-2 text-sm font-semibold">
+            <h3 className="flex items-center gap-2 text-base font-semibold">
               <CalendarDays className="h-4 w-4" /> Today&rsquo;s Lists
             </h3>
-            <p className="mt-0.5 text-xs text-muted-foreground">
+            <p className="mt-0.5 text-[13px] text-muted-foreground">
               {totals.lists} list{totals.lists === 1 ? '' : 's'} · {totals.workers} worker
               {totals.workers === 1 ? '' : 's'} · {totals.companies} compan
               {totals.companies === 1 ? 'y' : 'ies'}
@@ -158,7 +158,7 @@ export function TodayBoard({
           {data.groups.map((g) => (
             <SectionCard key={g.clientId}>
               <div className="flex items-center justify-between gap-2">
-                <h4 className="text-sm font-bold">{g.clientName}</h4>
+                <h4 className="text-[15px] font-bold">{g.clientName}</h4>
                 <Badge variant="outline" className="gap-1">
                   <Users className="h-3 w-3" />
                   {g.lists.length} list{g.lists.length === 1 ? '' : 's'} ·{' '}
@@ -187,8 +187,8 @@ export function TodayBoard({
                             {NL_STATUS_META[l.status].label}
                           </Badge>
                         </div>
-                        <p className="mt-1.5 font-mono text-sm font-bold">{l.listNo}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="mt-1.5 font-mono text-[15px] font-bold">{l.listNo}</p>
+                        <p className="text-[13px] text-muted-foreground">
                           {l.time ?? '—'}
                           {l.subjectKind === 'mobilization'
                             ? ` · ${l.projectName ?? l.location ?? 'site —'}`
@@ -196,7 +196,7 @@ export function TodayBoard({
                               ? ` · ${l.location}`
                               : ''}
                         </p>
-                        <p className="mt-1 text-xs">
+                        <p className="mt-1 text-[13px]">
                           <b>{l.workerCount}</b> worker{l.workerCount === 1 ? '' : 's'}
                           {l.subjectKind === 'interview' && l.resultCounts.selected + l.resultCounts.rejected + l.resultCounts.absent > 0 ? (
                             <span className="ml-1.5 inline-flex flex-wrap gap-1">
@@ -205,7 +205,7 @@ export function TodayBoard({
                                   <span
                                     key={r}
                                     className={cn(
-                                      'rounded-full border px-1.5 py-px text-[10px] font-medium',
+                                      'rounded-full border px-1.5 py-px text-[11px] font-medium',
                                       NL_RESULT_META[r].chip
                                     )}
                                   >

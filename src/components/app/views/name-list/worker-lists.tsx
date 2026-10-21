@@ -377,9 +377,9 @@ export function WorkerListsView({
               }
             />
           ) : (
-            <table className="w-full text-sm">
+            <table className="w-full text-[15px]">
               <thead>
-                <tr className="border-b text-left text-xs uppercase tracking-wide text-muted-foreground">
+                <tr className="border-b text-left text-[11px] uppercase tracking-wide text-muted-foreground">
                   <th className="py-2 pr-3 font-semibold">List No</th>
                   <th className="py-2 pr-3 font-semibold">Date / Time</th>
                   <th className="py-2 pr-3 font-semibold">Client</th>
@@ -408,11 +408,11 @@ export function WorkerListsView({
                         </span>
                       ) : null}
                     </td>
-                    <td className="py-2.5 pr-3 whitespace-nowrap text-xs">
+                    <td className="py-2.5 pr-3 whitespace-nowrap text-[13px]">
                       {nlDateInput(r.date)}
                       {r.time ? <span className="text-muted-foreground"> · {r.time}</span> : null}
                     </td>
-                    <td className="py-2.5 pr-3 font-medium">{r.clientName}</td>
+                    <td className="py-2.5 pr-3 font-semibold">{r.clientName}</td>
                     <td className="py-2.5 pr-3">
                       <span
                         className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
@@ -421,7 +421,7 @@ export function WorkerListsView({
                         {r.subjectName}
                       </span>
                     </td>
-                    <td className="max-w-40 truncate py-2.5 pr-3 text-xs">
+                    <td className="max-w-40 truncate py-2.5 pr-3 text-[13px]">
                       {r.subjectKind === 'mobilization'
                         ? r.projectName ?? r.location ?? '—'
                         : r.location ?? '—'}
@@ -502,7 +502,7 @@ export function WorkerListsView({
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="font-mono text-sm font-bold">{r.listNo}</span>
+                      <span className="font-mono text-[15px] font-bold">{r.listNo}</span>
                       <span
                         className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
                         style={{ background: r.subjectColor }}
@@ -513,15 +513,15 @@ export function WorkerListsView({
                         {NL_STATUS_META[r.status].label}
                       </Badge>
                     </div>
-                    <p className="mt-1 truncate text-sm font-medium">{r.clientName}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="mt-1 truncate text-[15px] font-semibold">{r.clientName}</p>
+                    <p className="text-[13px] text-muted-foreground">
                       {nlDateInput(r.date)}
                       {r.time ? ` · ${r.time}` : ''}
                       {r.location || r.projectName
                         ? ` · ${r.subjectKind === 'mobilization' ? r.projectName ?? r.location : r.location}`
                         : ''}
                     </p>
-                    <p className="mt-0.5 text-xs">
+                    <p className="mt-0.5 text-[13px]">
                       <b>{r.workerCount}</b> workers
                       {r.subjectKind === 'interview' && r.resultCounts.selected > 0
                         ? ` · ${r.resultCounts.selected} selected`

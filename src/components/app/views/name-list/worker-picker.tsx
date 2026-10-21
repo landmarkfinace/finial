@@ -1,12 +1,13 @@
 'use client'
 
-// Worker picker for Name Lists — searches the Employee database (never types
-// names by hand): by name, Iqama No., Passport No., Mobile No. or Employee ID,
-// with trade / nationality / deployment filters. Available workers list first.
-// Bulk checkboxes → "Add selected".
+// Worker picker for Name Lists — searches the Employee database: by name,
+// Iqama No., Passport No., Mobile No. or Employee ID, with trade / nationality /
+// deployment filters. Available workers list first. Bulk checkboxes → "Add
+// selected", or "New worker" to type a brand-new worker straight into the
+// list (quick-add creates the employee record on the fly).
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { AlertTriangle, Search, UserPlus, Users } from 'lucide-react'
+import { AlertTriangle, Plus, Search, UserPlus, Users } from 'lucide-react'
 
 import { api, qs } from '@/lib/api-client'
 import type { Paginated, StaffRow } from '@/lib/types'
@@ -35,6 +36,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { EmptyState } from '../../shared/empty-state'
+import { QuickAddWorkerDialog, type QuickWorker } from './quick-add-worker'
 
 type Category = { id: string; name: string }
 
@@ -43,12 +45,21 @@ export function WorkerPickerDialog({
   onOpenChange,
   existingStaffIds,
   onAdd,
+  listId = null,
+  initialSelectedIds,
+  onWorkerCreated,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   /** staff ids already in the list — shown greyed, cannot re-add */
   existingStaffIds: Set<string>
   onAdd: (staffIds: string[]) => Promise<void> | void
+  /** when set, quick-added workers go straight into this list server-side */
+  listId?: string | null
+  /** draft selection (create-mode): rows start checked and stay toggleable */
+  initialSelectedIds?: string[] | Set<string>
+  /** fired after a quick-add so the parent can refresh / close */
+  onWorkerCreated?: (staff: QuickWorker, info: { addedToList: boolean; tempIqama: boolean; listNo: string | null }) => void | Promise<void>
 }) {
   const [search, setSearch] = useState('')
   const debounced = useDebounce(search)
@@ -60,6 +71,7 @@ export function WorkerPickerDialog({
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [adding, setAdding] = useState(false)
   const [categories, setCategories] = useState<Category[]>([])
+  const [quickAddOpen, setQuickAddOpen] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -103,9 +115,9 @@ export function WorkerPickerDialog({
       setCategoryId('all')
       setNationality('')
       setDeployment('all')
-      setSelected(new Set())
+      setSelected(new Set(initialSelectedIds ?? []))
     }
-  }, [open])
+  }, [open, initialSelectedIds])
 
   // Available workers first, then alphabetical
   const ordered = useMemo(() => {
@@ -246,15 +258,15 @@ export function WorkerPickerDialog({
                         onCheckedChange={() => toggle(s.id)}
                       />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">{s.fullName}</p>
-                        <p className="truncate text-xs text-muted-foreground">
+                        <p className="truncate text-[15px] font-medium">{s.fullName}</p>
+                        <p className="truncate text-[13px] text-muted-foreground">
                           {s.staffCategory?.name ?? s.position ?? '—'}
                           {s.nationality ? ` · ${s.nationality}` : ''} · Iqama {s.iqamaId}
                         </p>
                       </div>
                       {missing.length > 0 ? (
                         <span
-                          className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400"
+                          className="flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400"
                           title={`Missing in employee record: ${missing.join(', ')}`}
                         >
                           <AlertTriangle className="h-3.5 w-3.5" />
@@ -263,12 +275,12 @@ export function WorkerPickerDialog({
                       ) : null}
                       <Badge
                         variant="outline"
-                        className={cn('shrink-0 text-[10px]', NL_DEPLOYMENT_META[s.deploymentStatus]?.chip ?? '')}
+                        className={cn('shrink-0 text-[11px]', NL_DEPLOYMENT_META[s.deploymentStatus]?.chip ?? '')}
                       >
                         {NL_DEPLOYMENT_META[s.deploymentStatus]?.label ?? s.deploymentStatus}
                       </Badge>
                       {inList ? (
-                        <span className="shrink-0 text-[10px] text-muted-foreground">in list</span>
+                        <span className="shrink-0 text-[11px] text-muted-foreground">in list</span>
                       ) : null}
                     </label>
                   </li>
@@ -278,14 +290,18 @@ export function WorkerPickerDialog({
           )}
         </div>
 
-        <DialogFooter className="items-center justify-between border-t px-5 py-3">
-          <Label className="text-xs text-muted-foreground">
+        <DialogFooter className="items-center justify-between gap-2 border-t px-5 py-3">
+          <Label className="text-[13px] text-muted-foreground">
             {rows ? `${rows.length} worker(s) shown` : ''}
             {nationality === '' && categoryId === 'all' && deployment === 'all' && !debounced
               ? ' — use filters to narrow down'
               : ''}
           </Label>
           <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setQuickAddOpen(true)} title="Type a new worker directly — creates the employee record">
+              <Plus className="h-4 w-4" />
+              New worker
+            </Button>
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
@@ -296,6 +312,25 @@ export function WorkerPickerDialog({
           </div>
         </DialogFooter>
       </DialogContent>
+
+      {/* quick-add stacked on top of the picker */}
+      {quickAddOpen ? (
+        <QuickAddWorkerDialog
+          open={quickAddOpen}
+          onOpenChange={setQuickAddOpen}
+          listId={listId}
+          categories={categories}
+          nationalities={nationalities}
+          onSaved={async (staff, info) => {
+            // keep the fresh worker visible & selectable in this session
+            if (!info.addedToList) {
+              setSelected((prev) => new Set(prev).add(staff.id))
+            }
+            await load()
+            if (onWorkerCreated) await onWorkerCreated(staff, info)
+          }}
+        />
+      ) : null}
     </Dialog>
   )
 }
